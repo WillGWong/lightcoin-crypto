@@ -1,29 +1,84 @@
-let balance = 500.00;
+class Account {
 
-class Withdrawal {
+  constructor(username) {
+    this.username = username;
+    this.transactions = [];
+  }
 
-  constructor(amount) {
-    this.amount = amount;
+  get balance() {
+    let total = 0
+    for (let key of this.transactions) {
+      total += key.value
+    }
+    return total
+  }
+
+  addTransaction(transaction) {
+    this.transactions.push(transaction);
+  }
+
+}
+
+class Transaction {
+
+  constructor(amount, account) {
+    this.amount  = amount;
+    this.account = account;
+
   }
 
   commit() {
-    balance -= this.amount;
+    if (!this.isAllowed()) {
+    console.log('Insufficient funds')
+    return false;
+    }
+    this.time = new Date();
+    this.account.addTransaction(this);
+    return true;
+  }
+}
+
+
+
+class Deposit extends Transaction {
+
+  get value () {
+    return this.amount
+  }
+
+  isAllowed() {
+    // deposits always allowed thanks to capitalism.
+    return true;
+  }
+
+}
+
+class Withdrawal extends Transaction {
+
+  get value () {
+    return -this.amount
+  }
+
+  isAllowed() {
+    // note how it has access to this.account b/c of parent
+    return (this.account.balance - this.amount >= 0);
   }
 
 }
 
 
 
-
 // DRIVER CODE BELOW
 // We use the code below to "drive" the application logic above and make sure it's working as expected
 
-t1 = new Withdrawal(50.25);
+const myAccount = new Account('billybob');
+
+console.log('Starting Balance:', myAccount.balance);
+
+const t1 = new Deposit(120.00, myAccount);
 t1.commit();
-console.log('Transaction 1:', t1);
 
-t2 = new Withdrawal(9.99);
+const t2 = new Withdrawal(50.00, myAccount);
 t2.commit();
-console.log('Transaction 2:', t2);
 
-console.log('Balance:', balance);
+console.log('Ending Balance:', myAccount.balance);
